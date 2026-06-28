@@ -30,8 +30,14 @@ export default function LoginPage() {
       const res = await authApi.login(data);
       setAuth(res.token, res.user, res.tenant, data.tenant);
       navigate('/');
-    } catch {
-      toast.error('Identifiants incorrects');
+    } catch (err: any) {
+      if (err?.code === 'ERR_NETWORK' || err?.code === 'ECONNREFUSED') {
+        toast.error('Serveur inaccessible — démarrez Laravel sur le port 8000');
+      } else if (err?.response?.status === 422 || err?.response?.status === 401) {
+        toast.error('Email ou mot de passe incorrect');
+      } else {
+        toast.error('Erreur : ' + (err?.response?.data?.message ?? 'serveur inaccessible'));
+      }
     } finally {
       setLoading(false);
     }
